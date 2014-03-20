@@ -28,6 +28,8 @@ requires = [
     'pep8',
     'autopep8',
     'selenium',
+    'mysql-python',
+    'sphinxalchemy',
     'regex',
     'pystache',
     ]
