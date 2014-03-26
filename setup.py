@@ -30,6 +30,7 @@ requires = [
     'selenium',
     'regex',
     'pystache',
+    'boto',
     ]
 
 setup(name='chsdi',

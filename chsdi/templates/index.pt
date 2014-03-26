@@ -30,6 +30,8 @@
           <a href="checker_dev">Checker for dev page</a> <br> 
       <h2 id="snapshot">Snapshot service</h2>
           <a href="snapshot?X=190000.00&Y=660000.00&zoom=1&lang=fr&topic=ech&bgLayer=ch.swisstopo.pixelkarte-farbe&snapshot=true">Snapshot</a> <br>
+      <h2 id="shorten">Shorten url</h2>
+          <a href="shorten.json?url=http://map.geo.admin.ch/?X=190000.00&Y=660000.00&zoom=1&lang=fr&topic=ech&bgLayer=ch.swisstopo.pixelkarte-farbe&layers=KML%7C%7Chttp:%2F%2Fs.geo.admin.ch%2Fe4c4eebf4">Shorten Example</a> <br>
       <h2 id="mapservices">Map Services</h2> 
           <h3>Mapservice (Layer metadata)</h3>
           <a href="rest/services/ech/MapServer">Topic (ech)</a> <br>

@@ -93,6 +93,9 @@ def main(global_config, **settings):
     config.add_route('checker', '/checker')
     config.add_route('checker_dev', '/checker_dev')
 
+    # Shortener
+    config.add_route('shorten', '/shorten.json')
+
     config.scan(ignore=['chsdi.tests', 'chsdi.models.bod', 'chsdi.models.vector'])  # required to find code decorated by view_config
 
     config.add_static_view('static', 'chsdi:static', cache_max_age=datetime.timedelta(days=365))
