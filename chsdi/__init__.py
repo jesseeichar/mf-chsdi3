@@ -95,6 +95,7 @@ def main(global_config, **settings):
 
     # Shortener
     config.add_route('shorten', '/shorten.json')
+    config.add_route('shorten_redirect', '/shorten/{id}')
 
     config.scan(ignore=['chsdi.tests', 'chsdi.models.bod', 'chsdi.models.vector'])  # required to find code decorated by view_config
 

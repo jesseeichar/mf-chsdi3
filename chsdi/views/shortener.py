@@ -22,23 +22,22 @@ def _connect():
 def _get_table():
 
     # url_short is the pkey
-    return Table('shorturls', schema=[
-                 HashKey('url_short', data_type=STRING)
-                 ], global_indexes=[
-                 GlobalAllIndex('url-index', parts=[
-                                HashKey('url', data_type=STRING)
-                                ])
-                 ],
-                 connection=_connect())
+    try:
+        return Table('shorturls', schema=[
+                     HashKey('url_short', data_type=STRING)
+                     ], global_indexes=[
+                     GlobalAllIndex('url-index', parts=[
+                                    HashKey('url', data_type=STRING)
+                                    ])
+                     ],
+                     connection=_connect())
+    except Exception as e:
+        print e
+        raise exc.HTTPBadRequest('Error during connection %s' % e)
 
 
 def _add_item(url):
-    try:
-        table = _get_table()
-    except Exception as e:
-        # Mail connection error?
-        print e
-        raise exc.HTTPBadRequest('Error during connection %s' % e)
+    table = _get_table()
 
     # First try to determine whether url is stored in DynamoDB
     entry = table.query(url__eq=url, index='url-index')
@@ -56,7 +55,6 @@ def _add_item(url):
                        'timestamp': time.strftime('%Y-%m-%d %X', time.localtime())
                        })
     except Exception as e:
-        # Mail item addition error?
         print e
         raise exc.HTTPBadRequest('Error during put item %s' % e)
     return url_short
@@ -89,5 +87,15 @@ def shortener(request):
     }
 
 
-#@view_config(route_name='shorten_redirect')
-# def shorten_redirect(request):
+@view_config(route_name='shorten_redirect')
+def shorten_redirect(request):
+    url_short = request.matchdict.get('id')
+    if url_short is None:
+        raise exc.HTTPBadRequest('Please provide an id')
+    table = _get_table()
+    try:
+        url = table.get_item(url_short=url_short).get('url')
+    except Exception as e:
+        print e
+        raise exc.HTTPBadRequest('This short url doesn\'t exist: s.geo.admin.ch/%s ' % url_short)
+    raise exc.HTTPFound(location=url)
