@@ -8,8 +8,9 @@ import uuid
 import time
 
 from boto.dynamodb2 import connect_to_region
-from boto.dynamodb2.fields import HashKey, RangeKey
+from boto.dynamodb2.fields import HashKey, GlobalAllIndex
 from boto.dynamodb2.table import Table
+from boto.dynamodb2.types import STRING
 
 
 # http://boto.readthedocs.org/en/latest/boto_config_tut.html
@@ -22,13 +23,16 @@ def _get_table():
 
     # url_short is the pkey
     return Table('shorturls', schema=[
-                 HashKey('url_short'),
-                 HashKey('url'),
-                 RangeKey('timestamp')
-                 ], connection=_connect())
+                 HashKey('url_short', data_type=STRING)
+                 ], global_indexes=[
+                 GlobalAllIndex('url-index', parts=[
+                                HashKey('url', data_type=STRING)
+                                ])
+                 ],
+                 connection=_connect())
 
 
-def _add_item(url_short='', url=''):
+def _add_item(url):
     try:
         table = _get_table()
     except Exception as e:
@@ -37,6 +41,14 @@ def _add_item(url_short='', url=''):
         raise exc.HTTPBadRequest('Error during connection %s' % e)
 
     # First try to determine whether url is stored in DynamoDB
+    entry = table.query(url__eq=url, index='url-index')
+    url_short = None
+    for e in entry:
+        url_short = e['url_short']
+    if url_short:
+        return url_short
+    # Create a new short url if url not in DB
+    url_short = str(uuid.uuid4())
     try:
         table.put_item(data={
                        'url_short': url_short,
@@ -47,6 +59,7 @@ def _add_item(url_short='', url=''):
         # Mail item addition error?
         print e
         raise exc.HTTPBadRequest('Error during put item %s' % e)
+    return url_short
 
 
 def _check_url(url):
@@ -67,9 +80,7 @@ def shortener(request):
     url = _check_url(
         request.params.get('url')
     )
-    # The only way to make sure the key is unique to my knowledge
-    url_short = str(uuid.uuid4())
-    _add_item(url_short=url_short, url=url)
+    url_short = _add_item(url)
     return {
         'shortUrl': ''.join((
                             's.geo.admin.ch/',
