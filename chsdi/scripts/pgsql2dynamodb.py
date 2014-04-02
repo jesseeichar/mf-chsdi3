@@ -29,7 +29,7 @@ if __name__ == '__main__':
     Short links can be migrated using a date or date range filter (-d)
 
     1) Migrate all the links from postgresql to dynmaodb
-    buildout/bin/python chsdi/scripts/pgsql2dynamodb.py -d all 
+    buildout/bin/python chsdi/scripts/pgsql2dynamodb.py -d all
 
     2) Migrate all the links created at a given date
     buildout/bin/python chsdi/scripts/pgsql2dynamodb.py -d 2014-02-20
@@ -38,18 +38,16 @@ if __name__ == '__main__':
     buildout/bin/python chsdi/scripts/pgsql2dynamodb.py -d 2014-02-20 2014-02-23
     \n'''
 
-
     OptionParser.format_epilog = lambda self, formatter: self.epilog
     parser = OptionParser(epilog=epilog)
     parser.add_option('-d', '--date_filter', dest='date_filter', default=None, action='store', help='Filter by date(s)')
 
     (options, args) = parser.parse_args()
 
-
     if options.date_filter == 'all':
         dateFrom = None
         dateTo = None
-    elif len(args) == 1:        
+    elif len(args) == 1:
         dateFrom = parse_date(options.date_filter)
         dateTo = parse_date(args[0])
     elif len(args) > 1:
@@ -71,7 +69,7 @@ if __name__ == '__main__':
     elif dateFrom and dateTo:
         query = ClientData.filter_by_daterange(query, dateFrom, dateTo).limit(5)
     # FIXME: Limit to 5 for now
-    #else:
+    # else:
         # Query all
 
     try:
