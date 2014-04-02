@@ -7,37 +7,11 @@ from urlparse import urlparse
 import uuid
 import time
 
-from boto.dynamodb2 import connect_to_region
-from boto.dynamodb2.fields import HashKey, GlobalAllIndex
-from boto.dynamodb2.table import Table
-from boto.dynamodb2.types import STRING
-
-
-# http://boto.readthedocs.org/en/latest/boto_config_tut.html
-def _connect():
-
-    return connect_to_region('us-west-2')
-
-
-def _get_table():
-
-    # url_short is the pkey
-    try:
-        return Table('shorturls', schema=[
-                     HashKey('url_short', data_type=STRING)
-                     ], global_indexes=[
-                     GlobalAllIndex('url-index', parts=[
-                                    HashKey('url', data_type=STRING)
-                                    ])
-                     ],
-                     connection=_connect())
-    except Exception as e:
-        print e
-        raise exc.HTTPBadRequest('Error during connection %s' % e)
+from chsdi.models.clientdata_dynamodb import get_table
 
 
 def _add_item(url):
-    table = _get_table()
+    table = get_table()
 
     # First try to determine whether url is stored in DynamoDB
     entry = table.query(url__eq=url, index='url-index')
