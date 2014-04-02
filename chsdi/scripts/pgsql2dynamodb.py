@@ -9,6 +9,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from chsdi.models.clientdata import ClientData
+from chsdi.models.clientdata_dynamodb import get_table
+
 
 if __name__ == '__main__':
 
@@ -73,12 +75,19 @@ if __name__ == '__main__':
         # Query all
 
     try:
+        table = get_table()
         for q in query:
             print q.url
             # Parse url and clean permalink parameters
             print q.url_short
-            # 
-    except:
+            table.put_item(data={
+                           'url_short': q.url_short,
+                           'url': q.url,
+                           'timestamp': str(q.bgdi_created)
+                           })
+    except Exception as e:
+        print e
+        print 'Last try failed'
         sys.exit(1)
     finally:
         DBSession.close()
