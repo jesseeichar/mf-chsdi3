@@ -3,6 +3,7 @@
 import os
 import sys
 import optparse
+import urlparse
 from datetime import date
 from optparse import OptionParser
 from sqlalchemy import create_engine
@@ -21,6 +22,20 @@ if __name__ == '__main__':
         except:
             parser.print_help()
             sys.exit(1)
+
+    def parse_url_params(url):
+        ''' Malformed parts of the query string
+        are dropped automatically
+        '''
+        return urlparse.parse_qs(
+            urlparse.urlparse(url).query
+        )
+
+    def drop_re2_params(params):
+        if 'selectedNode' in params:
+            del params['selectedNode']
+        if 'bgOpacity' in params:
+            del params['bgOpacity']
 
     me = os.path.basename(sys.argv[0])
 
