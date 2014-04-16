@@ -8,6 +8,7 @@ from datetime import date
 from optparse import OptionParser
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+from boto.exception import DynamoDBResponseError
 
 from chsdi.models.clientdata import ClientData
 from chsdi.models.clientdata_dynamodb import get_table
@@ -27,15 +28,22 @@ if __name__ == '__main__':
         ''' Malformed parts of the query string
         are dropped automatically
         '''
-        return urlparse.parse_qs(
+        return dict(urlparse.parse_qsl(
             urlparse.urlparse(url).query
-        )
+        ))
 
     def drop_re2_params(params):
         if 'selectedNode' in params:
             del params['selectedNode']
         if 'bgOpacity' in params:
             del params['bgOpacity']
+        return params
+
+    def build_qs_from_params(params):
+        qs = ''
+        for k, v in params.iteritems():
+            qs += ''.join((k, '=', v, '&'))
+        return qs[:-1]
 
     me = os.path.basename(sys.argv[0])
 
@@ -90,14 +98,22 @@ if __name__ == '__main__':
     try:
         table = get_table()
         for q in query:
-            print q.url
             # Parse url and clean permalink parameters
-            print q.url_short
-            table.put_item(data={
-                           'url_short': q.url_short,
-                           'url': q.url,
-                           'timestamp': str(q.bgdi_created)
-                           })
+            host = q.url.split('?')[0]
+            params = drop_re2_params(
+                parse_url_params(q.url))
+            qs = build_qs_from_params(params)
+            print host
+            print qs
+            try:
+                table.put_item(data={
+                               'url_short': q.url_short,
+                               'url': host + '?' + qs,
+                               'timestamp': str(q.bgdi_created)
+                               })
+            except DynamoDBResponseError as e:
+                # print in log file
+                print e
     except Exception as e:
         print e
         print 'Last try failed'
