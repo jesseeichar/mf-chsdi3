@@ -4,7 +4,6 @@ from pyramid.view import view_config
 import pyramid.httpexceptions as exc
 
 from urlparse import urlparse
-import uuid
 import time
 
 from chsdi.models.clientdata_dynamodb import get_table
@@ -21,7 +20,7 @@ def _add_item(url):
     if url_short:
         return url_short
     # Create a new short url if url not in DB
-    url_short = str(uuid.uuid4())
+    url_short = '%x' %int(time.time()*100)
     try:
         table.put_item(data={
                        'url_short': url_short,
