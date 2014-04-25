@@ -28,6 +28,9 @@ if __name__ == '__main__':
         ''' Malformed parts of the query string
         are dropped automatically
         '''
+        # Drop urls containing the old techincal addresses
+        if '.bgdi.admin.ch' in url:
+            return None
         return dict(urlparse.parse_qsl(
             urlparse.urlparse(url).query
         ))
@@ -99,24 +102,22 @@ if __name__ == '__main__':
         table = get_table()
         for q in query:
             # Parse url and clean permalink parameters
-            host = q.url.split('?')[0]
-            params = drop_re2_params(
-                parse_url_params(q.url))
-            qs = build_qs_from_params(params)
-            print host
-            print qs
-            try:
-                table.put_item(data={
-                               'url_short': q.url_short,
-                               'url': host + '?' + qs,
-                               'timestamp': str(q.bgdi_created)
-                               })
-            except DynamoDBResponseError as e:
-                # print in log file
-                print e
+            url_parsed = parse_url_params(q.url)
+            if url_parsed:
+                host = q.url.split('?')[0]
+                params = drop_re2_params(url_parsed)
+                qs = build_qs_from_params(params)
+                try:
+                    table.put_item(data={
+                                   'url_short': q.url_short,
+                                   'url': host + '?' + qs,
+                                   'timestamp': str(q.bgdi_created)
+                                   })
+                except DynamoDBResponseError as e:
+                    # print in log file
+                    print e
     except Exception as e:
         print e
-        print 'Last try failed'
         sys.exit(1)
     finally:
         DBSession.close()

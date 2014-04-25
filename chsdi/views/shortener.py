@@ -20,7 +20,7 @@ def _add_item(url):
     if url_short:
         return url_short
     # Create a new short url if url not in DB
-    url_short = '%x' %int(time.time()*100)
+    url_short = '%x' % int(time.time() * 100)
     try:
         table.put_item(data={
                        'url_short': url_short,
